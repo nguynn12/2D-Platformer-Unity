@@ -70,7 +70,7 @@ public class GameManager : MonoBehaviour
             }
         }
     }
-
+ 
     public void LevelComplete()
     {
         if (AudioManager.instance != null)
@@ -83,9 +83,8 @@ public class GameManager : MonoBehaviour
         levelCompleteCoins.text = "COINS COLLECTED: " + coinCount.ToString() + " / " + totalCoins.ToString();
     }
 
-    // ==========================================
     // CÁC HÀM XỬ LÝ HỒI SINH VÀ GAME OVER MỚI
-    // ==========================================
+    // Thay vì load lại Scene, chúng ta sẽ chỉ đặt lại vị trí của nhân vật về chỗ an toàn ban đầu khi còn mạng. Khi hết mạng, mới hiển thị Game Over.
 
     // 1. CÒN MẠNG: Chỉ dịch chuyển về chỗ cũ, không load lại Scene
     public void RespawnPlayer()
