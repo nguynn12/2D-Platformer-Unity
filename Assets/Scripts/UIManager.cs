@@ -14,6 +14,23 @@ public class UIManager : MonoBehaviour
 
     public PlayerController playerController;
 
+    [Header("--- Menu UI Panels ---")]
+    public GameObject mainPanel;   // Kéo MainPanel vào đây
+    public GameObject aboutPanel;  // Kéo AboutPanel vào đây
+
+    // Hàm mở Menu About (Tắt Main, Bật About)
+    public void OpenAboutMenu()
+    {
+        if (mainPanel != null) mainPanel.SetActive(false);
+        if (aboutPanel != null) aboutPanel.SetActive(true);
+    }
+
+    // Hàm đóng Menu About (Tắt About, Bật Main)
+    public void CloseAboutMenu()
+    {
+        if (aboutPanel != null) aboutPanel.SetActive(false);
+        if (mainPanel != null) mainPanel.SetActive(true);
+    }
 
     private void Awake()
     {

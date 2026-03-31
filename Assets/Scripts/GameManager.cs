@@ -7,9 +7,7 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
 
-
     [SerializeField] private TMP_Text coinText;
-
     [SerializeField] private PlayerController playerController;
 
     private int coinCount = 0;
@@ -17,20 +15,15 @@ public class GameManager : MonoBehaviour
     private bool isGameOver = false;
     private Vector3 playerPosition;
 
-    //Level Complete
-
+    // Level Complete UI
     [SerializeField] GameObject levelCompletePanel;
     [SerializeField] TMP_Text leveCompletePanelTitle;
     [SerializeField] TMP_Text levelCompleteCoins;
-
-
-
-
-   
+    
     private int totalCoins = 0;
-  
 
-
+    [Header("--- Game Over UI ---")]
+    public GameObject gameOverPanel; // Kéo thả cái Panel bị che trong Canvas vào đây
 
     private void Awake()
     {
@@ -42,6 +35,7 @@ public class GameManager : MonoBehaviour
     {
         UpdateGUI();
         UIManager.instance.fadeFromBlack = true;
+        // Lưu lại vị trí an toàn ban đầu để hồi sinh
         playerPosition = playerController.transform.position;
 
         FindTotalPickups();
@@ -52,6 +46,7 @@ public class GameManager : MonoBehaviour
         coinCount++;
         UpdateGUI();
     }
+
     public void IncrementGemCount()
     {
         gemCount++;
@@ -61,35 +56,10 @@ public class GameManager : MonoBehaviour
     private void UpdateGUI()
     {
         coinText.text = coinCount.ToString();
-  
     }
 
-    public void Death()
-    {
-        if (!isGameOver)
-        {
-            // Disable Mobile Controls
-            UIManager.instance.DisableMobileControls();
-            // Initiate screen fade
-            UIManager.instance.fadeToBlack = true;
-
-            // Disable the player object
-            playerController.gameObject.SetActive(false);
-
-            // Start death coroutine to wait and then respawn the player
-            StartCoroutine(DeathCoroutine());
-
-            // Update game state
-            isGameOver = true;
-
-            // Log death message
-            Debug.Log("Died");
-        }
-    }
- 
     public void FindTotalPickups()
     {
-
         pickup[] pickups = GameObject.FindObjectsOfType<pickup>();
 
         foreach (pickup pickupObject in pickups)
@@ -98,41 +68,68 @@ public class GameManager : MonoBehaviour
             {
                 totalCoins += 1;
             }
-           
         }
-
-
-      
     }
+
     public void LevelComplete()
     {
-       
-
-
         levelCompletePanel.SetActive(true);
         leveCompletePanelTitle.text = "LEVEL COMPLETE";
-
-
-
-        levelCompleteCoins.text = "COINS COLLECTED: "+ coinCount.ToString() +" / " + totalCoins.ToString();
- 
+        levelCompleteCoins.text = "COINS COLLECTED: " + coinCount.ToString() + " / " + totalCoins.ToString();
     }
-   
-    public IEnumerator DeathCoroutine()
+
+    // ==========================================
+    // CÁC HÀM XỬ LÝ HỒI SINH VÀ GAME OVER MỚI
+    // ==========================================
+
+    // 1. CÒN MẠNG: Chỉ dịch chuyển về chỗ cũ, không load lại Scene
+    public void RespawnPlayer()
     {
+        StartCoroutine(RespawnRoutine());
+    }
+
+    private IEnumerator RespawnRoutine()
+    {
+        // Khóa di chuyển, làm mờ màn hình
+        UIManager.instance.DisableMobileControls();
+        UIManager.instance.fadeToBlack = true;
+        playerController.gameObject.SetActive(false);
+
         yield return new WaitForSeconds(1f);
+
+        // Bê nhân vật đặt lại vị trí an toàn lúc bắt đầu
         playerController.transform.position = playerPosition;
+        playerController.gameObject.SetActive(true);
+        
+        // Sáng màn hình lên lại và mở khóa di chuyển
+        UIManager.instance.fadeFromBlack = true;
+        if (playerController.controlmode == Controls.mobile)
+            UIManager.instance.EnableMobileControls();
+    }
 
-        // Wait for 2 seconds
-        yield return new WaitForSeconds(1f);
-
-        // Check if the game is still over (in case player respawns earlier)
-        if (isGameOver)
+    // 2. HẾT MẠNG: Kết thúc game
+    public void GameOver()
+    {
+        if (!isGameOver)
         {
-            SceneManager.LoadScene(1);
+            isGameOver = true;
+            Debug.Log("GAME OVER!");
 
+            UIManager.instance.DisableMobileControls();
+            playerController.gameObject.SetActive(false); // Xóa xác nhân vật
             
+            // Hiện panel Game Over mà tác giả đã che
+            if (gameOverPanel != null)
+            {
+                gameOverPanel.SetActive(true);
+            }
+            else 
+            {
+                // Phương án dự phòng: Tận dụng LevelCompletePanel nếu không tìm thấy GameOverPanel
+                levelCompletePanel.SetActive(true);
+                leveCompletePanelTitle.text = "GAME OVER";
+                levelCompleteCoins.text = "Bạn đã hết mạng!";
+            }
         }
     }
-
 }

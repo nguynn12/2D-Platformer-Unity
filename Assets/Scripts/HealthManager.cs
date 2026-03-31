@@ -6,7 +6,7 @@ public class HealthManager : MonoBehaviour
     public static HealthManager instance;
     public GameObject damageEffect;
 
-    private int MaxHealth = 6;
+    private int MaxHealth = 3;
     public int currentHealth;
 
     [SerializeField] private Image[] hearts;
@@ -24,54 +24,63 @@ public class HealthManager : MonoBehaviour
     private void Start()
     {
         Player = GameObject.FindObjectOfType<PlayerController>().gameObject;
-        currentHealth = MaxHealth;
+        currentHealth = MaxHealth; // Bơm đầy máu lúc mới vào game
         DisplayHearts();
     }
-   
-  
 
+    // Hàm gốc của tác giả, ta thêm logic Game Over/Respawn vào đây
     public void HurtPlayer()
     {
-
         if (currentHealth > 0)
         {
             currentHealth--;
             DisplayHearts();
-            //Player.GetComponent<PlayerController>().Knockback();
+
+            // Phát âm thanh mất máu
+            if (AudioManager.instance != null) 
+                AudioManager.instance.PlaySFX(AudioManager.instance.deathSound);
+
+            // LỚP GIÁP BẢO VỆ: Chỉ sinh hiệu ứng nếu có file hiệu ứng được kéo thả vào
+            // Nếu quên kéo thả, game sẽ bỏ qua dòng này và chạy tiếp xuống dưới, không bị crash!
+            if (damageEffect != null)
+            {
+                Instantiate(damageEffect, Player.transform.position, Quaternion.identity);
+            }
+
+            // KIỂM TRA MẠNG BÂY GIỜ SẼ CHẠY MƯỢT MÀ
+            if (currentHealth <= 0)
+            {
+                // HẾT SẠCH MÁU -> Gọi màn hình Game Over
+                GameManager.instance.GameOver(); 
+            }
+            else
+            {
+                // CÒN MÁU -> Chỉ hồi sinh nhân vật về vị trí cũ
+                GameManager.instance.RespawnPlayer();
+            }
         }
-        else if (currentHealth <= 0)
-        {
-            GameManager.instance.Death();
-        }
-        
-        Instantiate(damageEffect, Player.transform.position, Quaternion.identity);
     }
 
+    // Hàm này giữ nguyên 100% của tác giả để vẽ nửa trái tim
     public void DisplayHearts()
     {
-        int fullHeartsCount = currentHealth / 2; // Calculate the number of full hearts
-        bool hasHalfHeart = (currentHealth % 2) == 1; // Check if there's a half heart needed
+        int fullHeartsCount = currentHealth / 2; 
+        bool hasHalfHeart = (currentHealth % 2) == 1; 
 
         for (int i = 0; i < hearts.Length; i++)
         {
             if (i < fullHeartsCount)
             {
-                // Heart should be full
                 hearts[i].sprite = FullHeartSprite;
             }
             else if (hasHalfHeart && i == fullHeartsCount)
             {
-                // Heart should be half
                 hearts[i].sprite = HalfHeartSprite;
             }
             else
             {
-                // Heart should be empty
                 hearts[i].sprite = EmptyHeartSprite;
             }
         }
     }
-
-    
-
 }

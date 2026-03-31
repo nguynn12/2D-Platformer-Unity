@@ -165,14 +165,16 @@ public class PlayerController : MonoBehaviour
        
 
 
-        rb.velocity = new Vector2(moveX * moveSpeed, rb.velocity.y);
+        rb.linearVelocity = new Vector2(moveX * moveSpeed, rb.linearVelocity.y);
     }
 
     private void Jump(float jumpForce)
     {
-        rb.velocity = new Vector2(rb.velocity.x, 0); // Zero out vertical velocity
+        rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0); // Zero out vertical velocity
         rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
         playeranim.SetTrigger("jump");
+
+        AudioManager.instance.PlaySFX(AudioManager.instance.jumpSound);
     }
 
     private bool IsGrounded()
@@ -186,7 +188,7 @@ public class PlayerController : MonoBehaviour
     {
         if(collision.gameObject.tag == "killzone")
         {
-            GameManager.instance.Death();
+            HealthManager.instance.HurtPlayer();
         }
     }
     

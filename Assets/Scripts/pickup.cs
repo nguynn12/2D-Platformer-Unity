@@ -16,6 +16,8 @@ public class pickup : MonoBehaviour
             if(collision.gameObject.tag == "Player")
             {
                 GameManager.instance.IncrementCoinCount();
+
+                AudioManager.instance.PlaySFX(AudioManager.instance.coinSound);
            
                 Instantiate(PickupEffect, transform.position, Quaternion.identity);
 
@@ -30,6 +32,8 @@ public class pickup : MonoBehaviour
             if (collision.gameObject.tag == "Player")
             {
                 GameManager.instance.IncrementGemCount();
+
+                AudioManager.instance.PlaySFX(AudioManager.instance.gemSound);
             
                 Instantiate(PickupEffect, transform.position, Quaternion.identity);
 
