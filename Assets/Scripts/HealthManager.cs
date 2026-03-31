@@ -6,12 +6,13 @@ public class HealthManager : MonoBehaviour
     public static HealthManager instance;
     public GameObject damageEffect;
 
+    // Đổi MaxHealth thành 3 (Tương đương 3 mạng trọn vẹn)
     private int MaxHealth = 3;
     public int currentHealth;
 
     [SerializeField] private Image[] hearts;
     [SerializeField] private Sprite FullHeartSprite;
-    [SerializeField] private Sprite HalfHeartSprite;
+    // (Đã xóa biến HalfHeartSprite vì chúng ta không xài nữa)
     [SerializeField] private Sprite EmptyHeartSprite;
 
     private GameObject Player;
@@ -24,62 +25,52 @@ public class HealthManager : MonoBehaviour
     private void Start()
     {
         Player = GameObject.FindObjectOfType<PlayerController>().gameObject;
-        currentHealth = MaxHealth; // Bơm đầy máu lúc mới vào game
+        currentHealth = MaxHealth; // Bơm đầy 3 mạng lúc mới vào game
         DisplayHearts();
     }
 
-    // Hàm gốc của tác giả, ta thêm logic Game Over/Respawn vào đây
     public void HurtPlayer()
     {
         if (currentHealth > 0)
         {
+            // Trừ đúng 1 điểm (tương đương 1 trái tim)
             currentHealth--;
             DisplayHearts();
 
-            // Phát âm thanh mất máu
+            // Phát âm thanh
             if (AudioManager.instance != null) 
                 AudioManager.instance.PlaySFX(AudioManager.instance.deathSound);
 
-            // LỚP GIÁP BẢO VỆ: Chỉ sinh hiệu ứng nếu có file hiệu ứng được kéo thả vào
-            // Nếu quên kéo thả, game sẽ bỏ qua dòng này và chạy tiếp xuống dưới, không bị crash!
+            // Sinh hiệu ứng (nếu có kéo thả vào)
             if (damageEffect != null)
             {
                 Instantiate(damageEffect, Player.transform.position, Quaternion.identity);
             }
 
-            // KIỂM TRA MẠNG BÂY GIỜ SẼ CHẠY MƯỢT MÀ
+            // Kiểm tra số mạng còn lại
             if (currentHealth <= 0)
             {
-                // HẾT SẠCH MÁU -> Gọi màn hình Game Over
                 GameManager.instance.GameOver(); 
             }
             else
             {
-                // CÒN MÁU -> Chỉ hồi sinh nhân vật về vị trí cũ
                 GameManager.instance.RespawnPlayer();
             }
         }
     }
 
-    // Hàm này giữ nguyên 100% của tác giả để vẽ nửa trái tim
+    // Thuật toán hiển thị tim mới: Siêu đơn giản và trực quan
     public void DisplayHearts()
     {
-        int fullHeartsCount = currentHealth / 2; 
-        bool hasHalfHeart = (currentHealth % 2) == 1; 
-
         for (int i = 0; i < hearts.Length; i++)
         {
-            if (i < fullHeartsCount)
+            if (i < currentHealth)
             {
-                hearts[i].sprite = FullHeartSprite;
-            }
-            else if (hasHalfHeart && i == fullHeartsCount)
-            {
-                hearts[i].sprite = HalfHeartSprite;
+                hearts[i].sprite = FullHeartSprite; // Còn mạng thì hiện tim đỏ
             }
             else
             {
-                hearts[i].sprite = EmptyHeartSprite;
+                hearts[i].sprite = EmptyHeartSprite; // Mất mạng thì hiện tim xám (rỗng)
             }
         }
     }
